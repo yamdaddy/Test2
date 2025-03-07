@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GA 및 보험판매전문회사 도입 현황 분석</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0088FE;
+            --secondary-color: #00C49F;
+            --accent-color: #FFBB28;
+            --danger-color: #FF8042;
+            --dark-color: #333333;
+            --light-color: #f5f5f5;
+            --border-color: #e0e0e0;
+            --text-color: #333333;
+            --text-light: #666666;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f1f1f1;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: var(--border-color);
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fafafa;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .col-full {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-blue {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-red {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .badge-yellow {
+            background-color: #fff8e1;
+            color: #ff8f00;
+        }
+        
+        .badge-green {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .info-box {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .info-box ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        
+        .info-box.blue {
+            background-color: #e3f2fd;
+        }
+        
+        .info-box.yellow {
+            background-color: #fff8e1;
+        }
+        
+        .info-box.green {
+            background-color: #e8f5e9;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #e0e0e0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+        
+        .timeline-item.red::before {
+            background-color: var(--danger-color);
+        }
+        
+        .timeline-item.green::before {
+            background-color: var(--success-color);
+        }
+        
+        .timeline-item.yellow::before {
+            background-color: var(--warning-color);
+        }
+        
+        .timeline-item h4 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-item p {
+            color: var(--text-light);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+            color: var(--text-light);
+            font-size: 12px;
+        }
+        
+        .quote {
+            padding: 15px;
+            border-left: 4px solid var(--warning-color);
+            background-color: #fff8e1;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .quote-source {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1 0 auto;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GA 및 보험판매전문회사 도입 현황 분석</h1>
+            <p>2025년 3월 기준 | 보험기획부</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="overview">시장 개요</div>
+            <div class="tab" data-tab="comparison">제도 비교</div>
+            <div class="tab" data-tab="issues">현안 분석</div>
+        </div>
+
+        <!-- 시장 개요 탭 -->
+        <div class="tab-content active" id="overview">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">500인 이상 대형 GA 설계사 수 추이</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="chart-container">
+                            <canvas id="agentsChart"></canvas>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                            * 2022년부터 2024년까지 지속적으로 증가 추세
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">보험사 신계약 GA 판매 비중 변화</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="chart-container">
+                            <canvas id="salesRatioChart"></canvas>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                            * 생명보험 GA 비중: 24%(2018) → 41.3%(2022)<br>
+                            * 손해보험 GA 비중: 42.9%(2018) → 53.6%(2022)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card col-full">
+                    <div class="card-header">
+                        <h2 class="card-title">보험 판매 채널 구조 변화</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="grid">
+                            <div>
+                                <h3 style="text-align: center; margin-bottom: 15px;">생명보험 판매채널 구조</h3>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="lifePieChart"></canvas>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 style="text-align: center; margin-bottom: 15px;">손해보험 판매채널 구조</h3>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="nonLifePieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #666; text-align: center;">
+                            * 손해보험에서는 GA가 이미 과반 이상의 판매 비중 차지
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 제도 비교 탭 -->
+        <div class="tab-content" id="comparison">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">보험판매전문회사와 GA 비교</h2>
+                </div>
+                <div class="card-content">
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>주요 특성</th>
+                                    <th>보험판매전문회사</th>
+                                    <th>법인보험대리점(GA)</th>
+                                    <th>주요 내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>일정 자본금</strong></td>
+                                    <td>있음</td>
+                                    <td>자본금 규정 없음</td>
+                                    <td style="color: #666;">보험판매전문회사는 일정 수준 이상의 자본금을 보유해야 함</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>소비자에 대한 배상책임</strong></td>
+                                    <td>직접 배상</td>
+                                    <td>1차 배상책임은 보험사에 있음</td>
+                                    <td style="color: #666;">보험판매전문회사는 소비자에게 직접 배상 책임을 짐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>사업비/수수료 협상</strong></td>
+                                    <td>일정 범위 내에서 가능</td>
+                                    <td>없음</td>
+                                    <td style="color: #666;">보험판매전문회사는 보험사와 사업비/수수료를 협상할 수 있음</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="info-box blue">
+                        <h3 style="color: #1976d2;">보험판매전문회사 도입 주요 영향</h3>
+                        <ul>
+                            <li>금융사 수준의 역할과 책임 부여</li>
+                            <li>보험사와 사업비/수수료 협상 권한 확보</li>
+                            <li>계약 체결 '대리'에서 '중개'로 역할 확대</li>
+                            <li>소비자 보호 책임 강화</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">보험판매전문회사 도입 시도 연혁</h2>
+                </div>
+                <div class="card-content">
+                    <div class="timeline">
+                        <div class="timeline-item red">
+                            <h4>2008년</h4>
+                            <p>첫 번째 도입 시도, 보험사 반발로 무산</p>
+                        </div>
+                        <div class="timeline-item red">
+                            <h4>2015년</h4>
+                            <p>두 번째 도입 시도, 보험사 반발로 무산</p>
+                        </div>
+                        <div class="timeline-item green">
+                            <h4>2024년 8월</h4>
+                            <p>김병환 금융위원장, 보험판매전문회사 도입 검토 발표</p>
+                        </div>
+                        <div class="timeline-item yellow">
+                            <h4>2025년 1분기</h4>
+                            <p>도입 목표 시점, 현재 논의 진전 없음</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 현안 분석 탭 -->
+        <div class="tab-content" id="issues">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">GA 업계 주요 현안 및 영향 분석</h2>
+                </div>
+                <div class="card-content">
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>주요 현안</th>
+                                    <th>진행 상황</th>
+                                    <th>영향도</th>
+                                    <th>주요 내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>GA 판매수수료 개편안</strong></td>
+                                    <td><span class="badge badge-blue">진행 중</span></td>
+                                    <td><span class="badge badge-red">높음</span></td>
+                                    <td style="color: #666;">1-2년 내 선지급에서 3-7년 분할 지급으로 변경 예정</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>보험판매전문회사 도입</strong></td>
+                                    <td><span class="badge badge-red">난항</span></td>
+                                    <td><span class="badge badge-red">높음</span></td>
+                                    <td style="color: #666;">금융당국이 GA 육성보다 규제에 방점</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>삼성생명 보이콧</strong></td>
+                                    <td><span class="badge badge-yellow">계획 단계</span></td>
+                                    <td><span class="badge badge-yellow">중간</span></td>
+                                    <td style="color: #666;">GA 업계의 판매수수료 개편안 반대를 위한 압박 전략</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">GA 영향력 증가 분석</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-box">
+                            <h3>GA 성장 요인</h3>
+                            <ul>
+                                <li>대형 GA를 중심으로 설계사 수 지속 증가</li>
+                                <li>보험사 판매채널에서 GA로 무게중심 이동</li>
+                                <li>생명보험과 손해보험 모두 GA 판매비중 증가</li>
+                                <li>삼성생명 보이콧 추진 등 협상력 강화</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <h3 style="margin-bottom: 10px;">업계 인식 변화</h3>
+                            <div class="quote">
+                                "이미 보험상품을 대신 팔아주는 GA가 갑이고 보험사가 을이다."
+                                <div class="quote-source">- 보험 업계 관계자</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">금융당국과 GA 업계 갈등 분석</h2>
+                    </div>
+                    <div class="card-content">
+                        <div>
+                            <h3 style="margin-bottom: 10px;">금융당국 주요 정책 방향</h3>
+                            <div class="info-box blue">
+                                <ul>
+                                    <li>GA 판매수수료 개편안 추진 (1-2년 내 선지급 → 3-7년 분할 지급)</li>
+                                    <li>GA 내부통제 강화 정책</li>
+                                    <li>보험사의 GA 관리·평가체계 도입</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <h3 style="margin-bottom: 10px;">GA 업계 주요 요구사항</h3>
+                            <div class="info-box green">
+                                <ul>
+                                    <li>보험판매전문회사 도입 추진 가속화</li>
+                                    <li>판매수수료 개편안 재검토</li>
+                                    <li>보험업권 현안회의에 GA 대표성 확보</li>
+                                    <li>GA 육성책 병행 요구</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            데이터 출처: 아시아경제, 법인보험대리점 통합공시조회
+        </div>
+    </div>
+
+    <script>
+        // 탭 전환 기능
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 모든 탭에서 active 클래스 제거
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // 모든 탭 콘텐츠에서 active 클래스 제거
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 클릭한 탭에 active 클래스 추가
+                tab.classList.add('active');
+                // 해당하는 탭 콘텐츠에 active 클래스 추가
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // 차트 데이터
+        const agentData = [
+            { year: '2022', agents: 178755 },
+            { year: '2023', agents: 198517 },
+            { year: '2024', agents: 208718 }
+        ];
+
+        const lifeInsuranceData = [
+            { year: '2018', ga: 24, direct: 76 },
+            { year: '2022', ga: 41.3, direct: 58.7 }
+        ];
+
+        const nonLifeInsuranceData = [
+            { year: '2018', ga: 42.9, direct: 57.1 },
+            { year: '2022', ga: 53.6, direct: 46.4 }
+        ];
+
+        // 색상 설정
+        const chartColors = {
+            primary: '#0088FE',
+            secondary: '#00C49F',
+            accent: '#FFBB28',
+            danger: '#FF8042',
+        };
+
+        // 500인 이상 대형 GA 설계사 수 추이 차트
+        const agentsCtx = document.getElementById('agentsChart').getContext('2d');
+        new Chart(agentsCtx, {
+            type: 'bar',
+            data: {
+                labels: agentData.map(d => d.year + '년'),
+                datasets: [{
+                    label: '설계사 수',
+                    data: agentData.map(d => d.agents),
+                    backgroundColor: chartColors.primary,
+                    borderColor: chartColors.primary,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 170000,
+                        max: 210000
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `설계사 수: ${context.raw.toLocaleString()}명`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 보험사 신계약 GA 판매 비중 변화 차트
+        const salesRatioCtx = document.getElementById('salesRatioChart').getContext('2d');
+        new Chart(salesRatioCtx, {
+            type: 'line',
+            data: {
+                labels: ['2018년', '2022년'],
+                datasets: [
+                    {
+                        label: '생명보험 GA 비중',
+                        data: lifeInsuranceData.map(d => d.ga),
+                        borderColor: chartColors.primary,
+                        backgroundColor: 'rgba(0, 136, 254, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    },
+                    {
+                        label: '손해보험 GA 비중',
+                        data: nonLifeInsuranceData.map(d => d.ga),
+                        borderColor: chartColors.secondary,
+                        backgroundColor: 'rgba(0, 196, 159, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 60,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 생명보험 판매채널 구조 차트
+        const lifePieCtx = document.getElementById('lifePieChart').getContext('2d');
+        new Chart(lifePieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['GA(2018)', '증가분(2018-2022)', '직판 등 기타'],
+                datasets: [{
+                    data: [24, 41.3 - 24, 58.7],
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.secondary,
+                        chartColors.accent
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 손해보험 판매채널 구조 차트
+        const nonLifePieCtx = document.getElementById('nonLifePieChart').getContext('2d');
+        new Chart(nonLifePieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['GA(2018)', '증가분(2018-2022)', '직판 등 기타'],
+                datasets: [{
+                    data: [42.9, 53.6 - 42.9, 46.4],
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.secondary,
+                        chartColors.accent
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
